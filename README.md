@@ -1,0 +1,2 @@
+Intern Management API
+This is a FastApi based backend application designed to manage interns, teack their login/logout attendance, assign tasks, and mark completion tasks. It integrates with MONGODB for persistent data storage.
