@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pymongo.mongo_client import MongoClient
+from typing import Optional
 from pymongo.server_api import ServerApi
 from datetime import datetime, date
 import os
@@ -8,12 +9,13 @@ from dotenv import load_dotenv
 from motor.motor_asyncio import AsyncIOMotorClient
 load_dotenv()
 
-app = FastAPI()
+app = FastAPI(title="Intern Mmanagement API",
+              description="Simple API for managing interns and tasks.")
 
 MONGO_URI=os.getenv("MONGO_URI")
 
 
-client = AsyncIOMotorClient(MONGO_URI)
+client = os.getenv("MONGO_URL", "mongodb://localhost:27017")
 
 
 try:
@@ -36,6 +38,8 @@ class LoginRequest(BaseModel):
 class TaskAssignment(BaseModel):
     intern_name: str
     task: str
+    deadline: Optional[datetime] = None
+    priority: str = Field(default="medium", description="Priority level: low, medium, high")
 
 class TaskCompletion(BaseModel):
     intern_name: str
@@ -45,7 +49,12 @@ class TaskCompletion(BaseModel):
 
 class Intern(BaseModel):
     name: str
+    email: Optional[str]
 
+class AttendanceRecord(BaseModel):
+    name: str
+    login_time: datetime
+    logout_time: Optional[datetime] = None
 
 
 @app.post("/add")
@@ -84,19 +93,19 @@ def logout(request: LoginRequest):
 @app.post("/assign_task")
 def assign_task(data: TaskAssignment):
     tasks_collection.insert_one({
-        "intern_name": data.intern_name,
+        "intern_name": "Animesh",
         "task": data.task,
         "status": "assigned"
     })
-    return {"message": f"Task assigned to {data.intern_name}"}
+    return {"message": f"Task assigned to {"intern_name"}"}
 
 @app.post("/complete_task")
 def complete_task(data: TaskCompletion):
     result = tasks_collection.update_one(
-        {"intern_name": data.intern_name, "task": data.task},
+        {"intern_name": "Animesh", "task": data.task},
         {"$set": {"status": "completed"}}
     )
     if result.modified_count > 0:
-        return {"message": f"{data.intern_name} completed the task"}
+        return {"message": f"Animesh completed the task"}
     else:
         return {"message": "Task not found or already completed"}
